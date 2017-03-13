@@ -308,6 +308,36 @@ Delete the exchange when this proccess disconnects? Boolean, defaults to 1.
 
 =back
 
+=head3 Queue Options
+
+These options are used in the call to
+L<Net::AMQP::RabbitMQ::queue_declare()|Net::AMQP::RabbitMQ/"Methods">.
+The full list of options is included for completeness.
+
+If declaring a queue to bind to the exchange, L<declare_exchange> should be set to 1.
+
+=item queue
+
+The queue to declare and bind to the named L<exchange>.
+
+=item passive_queue
+
+Ignore other options and check whether the queue exists instead of creating it. Boolean, defaults to 0.
+
+=item durable_queue
+
+Queue will remain active after server restart. Boolean, defaults to 0.
+
+=item exclusive_queue
+
+Queue may only be accessed by the current connection, and is deleted when the connection closes. Boolean, defaults to 0.
+
+=item auto_delete_queue
+
+Queue will be deleted when all consumers have finished using it. Boolean, defaults to 1.
+
+=back
+
 =head3 Publish Options
 
 These options are used in the call to
