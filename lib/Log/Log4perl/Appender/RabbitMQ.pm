@@ -40,6 +40,20 @@ sub new {
         $exchange_options{$declare_param_name} = $args{$name} if exists $args{$name};
     }
 
+    # Store any given queue options for declaring a queue
+    my %queue_options;
+    for my $name (qw/
+        passive_queue
+        durable_queue
+        exclusive_queue
+        auto_delete_queue
+    /) {
+        # convert from the param name we require in args to the name
+        # queue_declare() will look for by stripping off the _queue
+        (my $declare_param_name = $name) =~ s/(.*)_queue$/$1/;
+        $queue_options{$declare_param_name} = $args{$name} if exists $args{$name};
+    }
+
     # Store any given publish options for use when log is called
     my %publish_options;
     for my $name (qw/
@@ -79,7 +93,9 @@ sub new {
         connect_options  => \%connect_options,
         exchange_options => \%exchange_options,
         publish_options  => \%publish_options,
+        queue_options    => \%queue_options,
         mq               => $mq,
+        queue            => $args{queue},
         _is_connected    => 0,
     }, $class;
 
@@ -98,6 +114,22 @@ sub new {
             $self->{publish_options}{exchange},
             $self->{exchange_options},
         ) if $self->{declare_exchange};
+
+        # declare and bind the queue to the exchange if queue set
+        if ($self->{queue}) {
+            $mq->queue_declare(
+                $CHANNEL,
+                $self->{queue},
+                $self->{queue_options},
+            );
+
+            $mq->queue_bind(
+                $CHANNEL,
+                $self->{queue},
+                $self->{publish_options}{exchange},
+                $self->{routing_key},
+            );
+        }
 
         1;
     } or do {
